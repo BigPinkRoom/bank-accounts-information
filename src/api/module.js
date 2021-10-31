@@ -17,12 +17,13 @@ export default class ApiModule {
     try {
       const response = await axios(request);
 
-      if (response.data.status === 'ok') {
+      if (response.status === 200) {
         return response.data;
       } else {
-        throw new Error(response.data.status);
+        throw new Error(response.statusText);
       }
     } catch (error) {
+      console.log('test');
       throw new Error(error);
     }
   }

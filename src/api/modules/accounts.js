@@ -1,28 +1,20 @@
 import ApiModule from '../module';
-import accountsServices from '@/services/accounts';
 
 class Accounts extends ApiModule {
-  async getAccounts(params) {
-    const response = await this.request('/accounts/get', 'get', params);
-    return accountsServices.get.convertData(response);
+  async get(params) {
+    return await this.request('/accounts/get', 'get', params);
   }
 
-  async addAccounts(params) {
-    const requestBody = accountsServices.add.createRequestBody(params);
-    const response = await this.request('/accounts/add', 'put', requestBody);
-    return response;
+  async add(requestBody) {
+    return await this.request('/accounts/add', 'put', requestBody);
   }
 
-  async updateAccounts(params) {
-    const requestBody = accountsServices.update.createRequestBody(params);
-    const response = await this.request('/accounts/update', 'put', requestBody);
-    return response;
+  async update(requestBody) {
+    return await this.request('/accounts/update', 'put', requestBody);
   }
 
-  async deleteAccounts(params) {
-    const requestBody = accountsServices.delete.createRequestBody(params);
-    const response = await this.request('/accounts/delete', 'delete', requestBody);
-    return response;
+  async delete(requestBody) {
+    return await this.request('/accounts/delete', 'delete', requestBody);
   }
 }
 

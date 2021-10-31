@@ -1,28 +1,20 @@
 import ApiModule from '../module';
-import remainingBalancesServices from '@/services/remainingBalances';
 
 class RemainingBalances extends ApiModule {
-  async getRemainingBalances(params) {
-    const response = await this.request('/remaining-balances/get', 'get', params);
-    return remainingBalancesServices.get.convertData(response);
+  async get(params) {
+    return await this.request('/remaining-balances/get', 'get', params);
   }
 
-  async addRemainingBalances(params) {
-    const requestBody = remainingBalancesServices.add.createRequestBody(params);
-    const response = await this.request('/remaining-balances/add', 'put', requestBody);
-    return response;
+  async add(requestBody) {
+    return await this.request('/remaining-balances/add', 'put', requestBody);
   }
 
-  async updateRemainingBalances(params) {
-    const requestBody = remainingBalancesServices.update.createRequestBody(params);
-    const response = await this.request('/remaining-balances/update', 'put', requestBody);
-    return response;
+  async update(requestBody) {
+    return await this.request('/remaining-balances/update', 'put', requestBody);
   }
 
-  async deleteRemainingBalances(params) {
-    const requestBody = remainingBalancesServices.delete.createRequestBody(params);
-    const response = await this.request('/remaining-balances/delete', 'delete', requestBody);
-    return response;
+  async delete(requestBody) {
+    return await this.request('/remaining-balances/delete', 'delete', requestBody);
   }
 }
 
