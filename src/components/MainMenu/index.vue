@@ -1,6 +1,6 @@
 <template>
   <b-navbar toggleable="lg" type="dark" variant="info" class="px-3">
-    <b-navbar-brand href="#">Bank accounts information</b-navbar-brand>
+    <b-navbar-brand to="accounts">Bank accounts information</b-navbar-brand>
 
     <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
 

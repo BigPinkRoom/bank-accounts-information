@@ -2,7 +2,7 @@
   <b-container>
     <b-button size="sm" class="m-1" @click="clickShowHandler"> {{ showForms ? 'Закрыть' : buttonTitle }} </b-button>
     <div v-if="showForms">
-      <b-row v-for="property in listProperties" :key="property">
+      <b-row v-for="property in listProperties" :key="property.id">
         <b-col>
           <b-form-input size="sm" class="m-1" v-model="properties[property]"></b-form-input>
         </b-col>
@@ -16,6 +16,8 @@
   </b-container>
 </template>
 <script>
+import { uuid } from 'vue-uuid';
+
 export default {
   name: 'AddForm',
   props: {
@@ -53,14 +55,18 @@ export default {
       this.closeForm();
 
       if (check) {
-        this.$emit('send', this.properties);
+        const cloneProperties = {};
+        Object.assign(cloneProperties, this.properties);
+
+        this.$emit('send', cloneProperties);
       }
     },
     createProperties() {
-      console.log('this list properties', this.listProperties);
       this.listProperties.forEach((property) => {
         this.properties[property] = '';
       });
+      this.properties.id = uuid.v4();
+      this.properties.isEdit = false;
     },
   },
   mounted() {

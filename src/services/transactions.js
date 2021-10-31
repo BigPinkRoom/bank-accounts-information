@@ -42,7 +42,9 @@ export const transactionsServices = {
       });
 
       const changedAmountToFloat = filteredTransactions.map((transaction) => {
+        transaction.id = uuid.v4();
         transaction.Amount = transaction.Amount.toFixed(1);
+        transaction.isEdit = false;
         return transaction;
       });
 

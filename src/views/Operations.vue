@@ -8,7 +8,12 @@
               <p v-for="item in detailContent" :key="item.accountNumber">{{ item }}</p>
             </template>
           </v-detail-modal>
-          <b-container>
+          <b-container class="mt-2">
+            <v-add-form
+              :listProperties="formsNewOperation"
+              buttonTitle="Добавить новую операцию"
+              @send="(accountData) => addNewAccount(accountData, 'transactions')"
+            ></v-add-form>
             <b-row>
               <b-col>
                 <b-table
@@ -64,36 +69,52 @@
                 </b-table>
               </b-col>
             </b-row>
-            <b-row>
-              <b-col>
-                <b-table :fields="accounts.fields" :items="accounts.items">
-                  <template #cell(Acct)="data">
-                    <b-form-input
-                      v-if="accounts.items[data.index].isEdit"
-                      v-model="accounts.items[data.index].Acct"
-                      type="text"
-                    ></b-form-input>
-                    <span v-else>{{ data.value }}</span>
-                  </template>
-                  <template #cell(Ost)="data">
-                    <b-form-input
-                      v-if="accounts.items[data.index].isEdit"
-                      v-model="accounts.items[data.index].Ost"
-                      type="text"
-                    ></b-form-input>
-                    <span v-else>{{ data.value }}</span>
-                  </template>
-                  <template #cell(settings)="row">
-                    <div class="d-flex justify-content-end">
-                      <b-button size="sm" class="mx-1" @click="deleteRow(row.item.id, 'accounts')"> Удалить </b-button>
-                      <b-button size="sm" class="mx-1" @click="editRow(row, 'accounts')">
-                        {{ !accounts.items[row.index].isEdit ? 'Изменить' : 'Сохранить' }}
-                      </b-button>
-                      <b-button size="sm" class="mx-1" @click="showDetailModal(row)"> Детали </b-button>
-                    </div>
-                  </template>
-                </b-table>
-              </b-col>
+
+            <div v-if="!isShowAccountsTable">
+              <v-add-form
+                :listProperties="formsNewAccount"
+                buttonTitle="Добавить новый счёт"
+                @send="(accountData) => addNewAccount(accountData, 'accounts')"
+              ></v-add-form>
+
+              <b-row>
+                <b-col>
+                  <b-table :fields="accounts.fields" :items="accounts.items">
+                    <template #cell(Acct)="data">
+                      <b-form-input
+                        v-if="accounts.items[data.index].isEdit"
+                        v-model="accounts.items[data.index].Acct"
+                        type="text"
+                      ></b-form-input>
+                      <span v-else>{{ data.value }}</span>
+                    </template>
+                    <template #cell(Ost)="data">
+                      <b-form-input
+                        v-if="accounts.items[data.index].isEdit"
+                        v-model="accounts.items[data.index].Ost"
+                        type="text"
+                      ></b-form-input>
+                      <span v-else>{{ data.value }}</span>
+                    </template>
+                    <template #cell(settings)="row">
+                      <div class="d-flex justify-content-end">
+                        <b-button size="sm" class="mx-1" @click="deleteRow(row.item.id, 'accounts')">
+                          Удалить
+                        </b-button>
+                        <b-button size="sm" class="mx-1" @click="editRow(row, 'accounts')">
+                          {{ !accounts.items[row.index].isEdit ? 'Изменить' : 'Сохранить' }}
+                        </b-button>
+                        <b-button size="sm" class="mx-1" @click="showDetailModal(row)"> Детали </b-button>
+                      </div>
+                    </template>
+                  </b-table>
+                </b-col>
+              </b-row>
+            </div>
+            <b-row v-else>
+              <b-col class="text-center">
+                {{ selectedRow ? 'На этот день, нет транзакций' : 'Выберите день для просмотра транзакций' }}</b-col
+              >
             </b-row>
           </b-container>
         </b-overlay>
@@ -106,6 +127,7 @@
 import { mapGetters } from 'vuex';
 import Workarea from '@/components/Workarea';
 import DetailModal from '@/components/Detail';
+import AddForm from '@/components/AddForm';
 import api from '@/api';
 import { transactionsServices } from '@/services/transactions';
 import { accountsServices } from '@/services/accounts';
@@ -115,9 +137,11 @@ export default {
   components: {
     VWorkarea: Workarea,
     VDetailModal: DetailModal,
+    VAddForm: AddForm,
   },
   data() {
     return {
+      selectedRow: null,
       transactions: {
         fields: [
           {
@@ -164,10 +188,16 @@ export default {
       isShowDetail: false,
       detailTitle: null,
       detailContent: null,
+      formsNewOperation: ['OpDate', 'AcctCr', 'AcctDB', 'Amount'],
+      formsNewAccount: ['Acct', 'Ost'],
     };
   },
   computed: {
     ...mapGetters(['getAllOperationsDays', 'getOperationsDay']),
+
+    isShowAccountsTable() {
+      return !this.accounts.items.length;
+    },
   },
   methods: {
     async setTransactions() {
@@ -211,7 +241,7 @@ export default {
     },
     showDetailModal(row) {
       this.isShowDetail = true;
-      this.detailTitle = `Детальная информация по ${row.item.id} счёту`;
+      this.detailTitle = `Детальная информация по ${row.item.id}`;
       console.log('row', row);
       const contentStrings = [];
 
@@ -235,6 +265,9 @@ export default {
     },
     editRow(row, tableName) {
       this[tableName].items[row.index].isEdit = !this[tableName].items[row.index].isEdit;
+    },
+    addNewAccount(accountData, table) {
+      this[table].items.unshift(accountData);
     },
   },
   mounted() {

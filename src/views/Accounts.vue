@@ -8,7 +8,7 @@
               <p v-for="item in detailContent" :key="item.accountNumber">{{ item }}</p>
             </template>
           </v-detail-modal>
-          <b-container>
+          <b-container class="mt-1">
             <b-row>
               <b-col>
                 <b-form-datepicker
@@ -23,8 +23,8 @@
 
             <v-add-form
               :listProperties="formsNewAccount"
-              buttonTitle="Создать новый счёт"
-              @send="addNewAccount"
+              buttonTitle="Добавить новый счёт"
+              @send="(accountData) => addNewAccount(accountData, 'accountsWithRemainingBalances')"
             ></v-add-form>
 
             <b-row v-if="!isEmptyAccountsTable">
@@ -69,55 +69,64 @@
             <b-row v-else>
               <b-col class="text-center"> На этот день, нет банковских операций </b-col>
             </b-row>
-            <b-row v-if="!isShowTransactionsTable">
-              <b-col>
-                <b-table :items="transactionsByAccount.items" :fields="transactionsByAccount.fields">
-                  <template #cell(OpDate)="data">
-                    <b-form-input
-                      v-if="transactionsByAccount.items[data.index].isEdit"
-                      v-model="transactionsByAccount.items[data.index].OpDate"
-                      type="text"
-                    ></b-form-input>
-                    <span v-else>{{ data.value }}</span>
-                  </template>
-                  <template #cell(AcctDB)="data">
-                    <b-form-input
-                      v-if="transactionsByAccount.items[data.index].isEdit"
-                      v-model="transactionsByAccount.items[data.index].AcctDB"
-                      type="text"
-                    ></b-form-input>
-                    <span v-else>{{ data.value }}</span>
-                  </template>
-                  <template #cell(AcctCr)="data">
-                    <b-form-input
-                      v-if="transactionsByAccount.items[data.index].isEdit"
-                      v-model="transactionsByAccount.items[data.index].AcctCr"
-                      type="text"
-                    ></b-form-input>
-                    <span v-else>{{ data.value }}</span>
-                  </template>
-                  <template #cell(Amount)="data">
-                    <b-form-input
-                      v-if="transactionsByAccount.items[data.index].isEdit"
-                      v-model="transactionsByAccount.items[data.index].Amount"
-                      type="text"
-                    ></b-form-input>
-                    <span v-else>{{ data.value }}</span>
-                  </template>
-                  <template #cell(settings)="row">
-                    <div class="d-flex justify-content-end">
-                      <b-button size="sm" class="mx-1" @click="deleteRow(row.item.id, 'transactionsByAccount')">
-                        Удалить
-                      </b-button>
-                      <b-button size="sm" class="mx-1" @click="editRow(row, 'transactionsByAccount')">
-                        {{ !transactionsByAccount.items[row.index].isEdit ? 'Изменить' : 'Сохранить' }}
-                      </b-button>
-                      <b-button size="sm" class="mx-1" @click="showDetailModal(row)"> Детали </b-button>
-                    </div>
-                  </template>
-                </b-table>
-              </b-col>
-            </b-row>
+
+            <div v-if="!isShowTransactionsTable">
+              <v-add-form
+                :listProperties="formsNewOperation"
+                buttonTitle="Добавить новую операцию"
+                @send="(accountData) => addNewAccount(accountData, 'transactionsByAccount')"
+              ></v-add-form>
+              <b-row>
+                <b-col>
+                  <b-table :items="transactionsByAccount.items" :fields="transactionsByAccount.fields">
+                    <template #cell(OpDate)="data">
+                      <b-form-input
+                        v-if="transactionsByAccount.items[data.index].isEdit"
+                        v-model="transactionsByAccount.items[data.index].OpDate"
+                        type="text"
+                      ></b-form-input>
+                      <span v-else>{{ data.value }}</span>
+                    </template>
+                    <template #cell(AcctDB)="data">
+                      <b-form-input
+                        v-if="transactionsByAccount.items[data.index].isEdit"
+                        v-model="transactionsByAccount.items[data.index].AcctDB"
+                        type="text"
+                      ></b-form-input>
+                      <span v-else>{{ data.value }}</span>
+                    </template>
+                    <template #cell(AcctCr)="data">
+                      <b-form-input
+                        v-if="transactionsByAccount.items[data.index].isEdit"
+                        v-model="transactionsByAccount.items[data.index].AcctCr"
+                        type="text"
+                      ></b-form-input>
+                      <span v-else>{{ data.value }}</span>
+                    </template>
+                    <template #cell(Amount)="data">
+                      <b-form-input
+                        v-if="transactionsByAccount.items[data.index].isEdit"
+                        v-model="transactionsByAccount.items[data.index].Amount"
+                        type="text"
+                      ></b-form-input>
+                      <span v-else>{{ data.value }}</span>
+                    </template>
+                    <template #cell(settings)="row">
+                      <div class="d-flex justify-content-end">
+                        <b-button size="sm" class="mx-1" @click="deleteRow(row.item.id, 'transactionsByAccount')">
+                          Удалить
+                        </b-button>
+                        <b-button size="sm" class="mx-1" @click="editRow(row, 'transactionsByAccount')">
+                          {{ !transactionsByAccount.items[row.index].isEdit ? 'Изменить' : 'Сохранить' }}
+                        </b-button>
+                        <b-button size="sm" class="mx-1" @click="showDetailModal(row)"> Детали </b-button>
+                      </div>
+                    </template>
+                  </b-table>
+                </b-col>
+              </b-row>
+            </div>
+
             <b-row v-else>
               <b-col class="text-center">
                 {{ selectedRow ? 'На этот день, нет транзакций' : 'Выберите счёт для просмотра его транзакций' }}</b-col
@@ -198,6 +207,7 @@ export default {
       detailTitle: null,
       detailContent: null,
       formsNewAccount: ['accountNumber', 'remainingBalance'],
+      formsNewOperation: ['OpDate', 'AcctDB', 'AcctCr', 'Amount'],
     };
   },
   computed: {
@@ -283,7 +293,7 @@ export default {
     },
     showDetailModal(row) {
       this.isShowDetail = true;
-      this.detailTitle = `Детальная информация по ${row.item.accountNumber} счёту`;
+      this.detailTitle = `Детальная информация по ${row.item.accountNumber}`;
       console.log('row', row);
       const contentStrings = [];
 
@@ -308,8 +318,8 @@ export default {
     editRow(row, tableName) {
       this[tableName].items[row.index].isEdit = !this[tableName].items[row.index].isEdit;
     },
-    addNewAccount(accountData) {
-      this.accountsWithRemainingBalances.items.unshift(accountData);
+    addNewAccount(accountData, table) {
+      this[table].items.unshift(accountData);
     },
   },
 
