@@ -16,7 +16,7 @@
                   v-model="selectedDate"
                   :date-info-fn="setDateClass"
                   :initial-date="initialDate"
-                  class="accounts-datepicker mb-2"
+                  class="accounts-datepicker my-2"
                 ></b-form-datepicker>
               </b-col>
             </b-row>
@@ -185,7 +185,7 @@ export default {
       try {
         const responseAccounts = await api.accounts.get();
         const responseTransactions = await api.transactions.get();
-        const result = accountsServices.getAccountsWithBalance.convertData({
+        const result = accountsServices.getAccountsWithBalance.convertToArray({
           accounts: responseAccounts,
           transactions: responseTransactions,
           selectedDate,
