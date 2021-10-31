@@ -20,6 +20,13 @@
                 ></b-form-datepicker>
               </b-col>
             </b-row>
+
+            <v-add-form
+              :listProperties="formsNewAccount"
+              buttonTitle="Создать новый счёт"
+              @send="addNewAccount"
+            ></v-add-form>
+
             <b-row v-if="!isEmptyAccountsTable">
               <b-col>
                 <b-table
@@ -34,6 +41,14 @@
                       v-if="accountsWithRemainingBalances.items[data.index].isEdit"
                       type="text"
                       v-model="accountsWithRemainingBalances.items[data.index].accountNumber"
+                    ></b-form-input>
+                    <span v-else>{{ data.value }}</span>
+                  </template>
+                  <template #cell(remainingBalance)="data">
+                    <b-form-input
+                      v-if="accountsWithRemainingBalances.items[data.index].isEdit"
+                      type="text"
+                      v-model="accountsWithRemainingBalances.items[data.index].remainingBalance"
                     ></b-form-input>
                     <span v-else>{{ data.value }}</span>
                   </template>
@@ -73,6 +88,7 @@
 import { mapActions, mapGetters } from 'vuex';
 import Workarea from '@/components/Workarea';
 import DetailModal from '@/components/Detail';
+import AddForm from '@/components/AddForm';
 import api from '@/api';
 import { accountsServices } from '@/services/accounts';
 import { transactionsServices } from '@/services/transactions';
@@ -82,6 +98,7 @@ export default {
   components: {
     VWorkarea: Workarea,
     VDetailModal: DetailModal,
+    VAddForm: AddForm,
   },
   data() {
     return {
@@ -130,6 +147,7 @@ export default {
       isShowDetail: false,
       detailTitle: null,
       detailContent: null,
+      formsNewAccount: ['accountNumber', 'remainingBalance'],
     };
   },
   computed: {
@@ -240,6 +258,9 @@ export default {
     editRowHandler(row) {
       this.accountsWithRemainingBalances.items[row.index].isEdit =
         !this.accountsWithRemainingBalances.items[row.index].isEdit;
+    },
+    addNewAccount(accountData) {
+      this.accountsWithRemainingBalances.items.unshift(accountData);
     },
   },
 
