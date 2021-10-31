@@ -37,6 +37,7 @@ export const accountsServices = {
         return {
           accountNumber: account.Acct,
           remainingBalance: startBalance.toFixed(1),
+          isEdit: false,
         };
       });
 

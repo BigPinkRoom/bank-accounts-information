@@ -3,7 +3,7 @@ import axios from 'axios';
 export default class ApiModule {
   async request(url, method, data) {
     const request = {
-      baseURL: 'https://0964c8ff-460d-43db-8aea-aae8a588b751.mock.pstmn.io',
+      baseURL: 'https://d87419cb-26bf-49ac-956b-bb4bcb5ff6bd.mock.pstmn.io',
       method,
       url,
     };
@@ -23,7 +23,6 @@ export default class ApiModule {
         throw new Error(response.statusText);
       }
     } catch (error) {
-      console.log('test');
       throw new Error(error);
     }
   }

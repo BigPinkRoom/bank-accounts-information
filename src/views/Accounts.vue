@@ -1,8 +1,13 @@
 <template>
   <div>
-    <workarea>
+    <v-workarea>
       <template #content>
         <b-overlay :show="isLoading" rounded="sm">
+          <v-detail-modal :title="detailTitle" :show="isShowDetail" @modalHide="hideDetailModalHandler">
+            <template #content>
+              <p v-for="item in detailContent" :key="item.accountNumber">{{ item }}</p>
+            </template>
+          </v-detail-modal>
           <b-container>
             <b-row>
               <b-col>
@@ -12,50 +17,77 @@
                   :date-info-fn="setDateClass"
                   :initial-date="initialDate"
                   class="accounts-datepicker mb-2"
-                  selectable
-                  select-mode="single"
                 ></b-form-datepicker>
               </b-col>
             </b-row>
-            <b-row v-if="!isEmptyTable">
+            <b-row v-if="!isEmptyAccountsTable">
               <b-col>
                 <b-table
                   :fields="accountsWithRemainingBalances.fields"
                   :items="accountsWithRemainingBalances.items"
-                ></b-table>
-              </b-col>
-            </b-row>
-            <b-row v-if="!isEmptyTable">
-              <b-col>
-                <b-table :items="itemsSecond"> </b-table>
+                  select-mode="single"
+                  selectable
+                  @row-selected="onAccountSelected"
+                >
+                  <template #cell(accountNumber)="data">
+                    <b-form-input
+                      v-if="accountsWithRemainingBalances.items[data.index].isEdit"
+                      type="text"
+                      v-model="accountsWithRemainingBalances.items[data.index].accountNumber"
+                    ></b-form-input>
+                    <span v-else>{{ data.value }}</span>
+                  </template>
+                  <template #cell(settings)="row">
+                    <div class="d-flex justify-content-end">
+                      <b-button size="sm" class="mx-1" @click="deleteRow(row.item.accountNumber)"> Удалить </b-button>
+                      <b-button size="sm" class="mx-1" @click="editRowHandler(row)">
+                        {{ !accountsWithRemainingBalances.items[row.index].isEdit ? 'Изменить' : 'Сохранить' }}
+                      </b-button>
+                      <b-button size="sm" class="mx-1" @click="showDetailModal(row)"> Детали </b-button>
+                    </div>
+                  </template>
+                </b-table>
               </b-col>
             </b-row>
             <b-row v-else>
-              <b-col> На этот день, нет банковских операций </b-col>
+              <b-col class="text-center"> На этот день, нет банковских операций </b-col>
+            </b-row>
+            <b-row v-if="!isShowTransactionsTable">
+              <b-col>
+                <b-table :items="transactionsByAccount.items" :fields="transactionsByAccount.fields"> </b-table>
+              </b-col>
+            </b-row>
+            <b-row v-else>
+              <b-col class="text-center">
+                {{ selectedRow ? 'На этот день, нет транзакций' : 'Выберите счёт для просмотра его транзакций' }}</b-col
+              >
             </b-row>
           </b-container>
         </b-overlay>
       </template>
-    </workarea>
+    </v-workarea>
   </div>
 </template>
 
 <script>
 import { mapActions, mapGetters } from 'vuex';
 import Workarea from '@/components/Workarea';
+import DetailModal from '@/components/Detail';
 import api from '@/api';
 import { accountsServices } from '@/services/accounts';
-// import { operationsDaysServices } from '@/services/operationsDays';
+import { transactionsServices } from '@/services/transactions';
 
 export default {
   name: 'Accounts',
   components: {
-    Workarea,
+    VWorkarea: Workarea,
+    VDetailModal: DetailModal,
   },
   data() {
     return {
       datesWithOperationsDays: [],
       selectedDate: null,
+      selectedRow: null,
       accountsWithRemainingBalances: {
         fields: [
           {
@@ -66,16 +98,38 @@ export default {
             key: 'remainingBalance',
             label: 'Остаток',
           },
+          {
+            key: 'settings',
+            label: 'Настройки',
+          },
         ],
         items: [],
       },
-      itemsSecond: [
-        {
-          test: 1,
-          test2: 2,
-        },
-      ],
+      transactionsByAccount: {
+        fields: [
+          {
+            key: 'OpDate',
+            label: 'Дата операционного дня',
+          },
+          {
+            key: 'AcctDB',
+            label: 'Счет дебета',
+          },
+          {
+            key: 'AcctCr',
+            label: 'Cчет кредита',
+          },
+          {
+            key: 'Amount',
+            label: 'Сумма',
+          },
+        ],
+        items: [],
+      },
       isLoading: false,
+      isShowDetail: false,
+      detailTitle: null,
+      detailContent: null,
     };
   },
   computed: {
@@ -88,8 +142,11 @@ export default {
         return new Date();
       }
     },
-    isEmptyTable() {
+    isEmptyAccountsTable() {
       return !this.accountsWithRemainingBalances.items.length;
+    },
+    isShowTransactionsTable() {
+      return !this.transactionsByAccount.items.length;
     },
   },
   watch: {
@@ -135,7 +192,57 @@ export default {
       const match = this.datesWithOperationsDays.find((date) => date === ymd);
       return match ? 'table-info' : '';
     },
+
+    async onAccountSelected(rows) {
+      const accountNumber = rows[0].accountNumber;
+
+      this.isLoading = true;
+
+      try {
+        const response = await api.transactions.get();
+        const result = transactionsServices.getByAccountNumber.convertToArray({
+          accountNumber,
+          transactions: response,
+        });
+
+        this.transactionsByAccount.items = result;
+        this.selectedRow = rows[0];
+      } catch (error) {
+        console.log('error', error);
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    showDetailModal(row) {
+      this.isShowDetail = true;
+      this.detailTitle = `Детальная информация по ${row.item.accountNumber} счёту`;
+      console.log('row', row);
+      const contentStrings = [];
+
+      for (let element in row.item) {
+        contentStrings.push(`${[element]}: ${row.item[element]}`);
+      }
+
+      console.log('content strings', contentStrings);
+
+      this.detailContent = contentStrings;
+    },
+    hideDetailModalHandler() {
+      this.isShowDetail = false;
+    },
+    async deleteRow(rowId) {
+      const deleteIndex = this.accountsWithRemainingBalances.items.findIndex((account) => {
+        return account.accountNumber === rowId;
+      });
+
+      this.accountsWithRemainingBalances.items.splice(deleteIndex, 1);
+    },
+    editRowHandler(row) {
+      this.accountsWithRemainingBalances.items[row.index].isEdit =
+        !this.accountsWithRemainingBalances.items[row.index].isEdit;
+    },
   },
+
   mounted() {
     this.setOperationsDays();
     this.setStartDate(this.datesWithOperationsDays);
