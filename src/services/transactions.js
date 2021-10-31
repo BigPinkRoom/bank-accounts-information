@@ -6,7 +6,9 @@ export const transactionsServices = {
       const convertedData = transactions.Doc;
 
       const changedAmountToFloat = convertedData.map((transaction) => {
+        transaction.id = uuid.v4();
         transaction.Amount = transaction.Amount.toFixed(1);
+        transaction.isEdit = false;
         return transaction;
       });
 

@@ -44,12 +44,16 @@ export const accountsServices = {
 
       return [
         {
+          id: uuid.v4(),
           Acct: firstAccountNumber,
           Ost: remainingFirstAccountBalance,
+          isEdit: false,
         },
         {
+          id: uuid.v4(),
           Acct: secondAccountNumber,
           Ost: remainingSecondAccountBalance,
+          isEdit: false,
         },
       ];
     },

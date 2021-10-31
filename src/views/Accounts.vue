@@ -57,7 +57,7 @@
                       <b-button size="sm" class="mx-1" @click="deleteRow(row.item.id, 'accountsWithRemainingBalances')">
                         Удалить
                       </b-button>
-                      <b-button size="sm" class="mx-1" @click="editRowHandler(row, 'accountsWithRemainingBalances')">
+                      <b-button size="sm" class="mx-1" @click="editRow(row, 'accountsWithRemainingBalances')">
                         {{ !accountsWithRemainingBalances.items[row.index].isEdit ? 'Изменить' : 'Сохранить' }}
                       </b-button>
                       <b-button size="sm" class="mx-1" @click="showDetailModal(row)"> Детали </b-button>
@@ -109,7 +109,7 @@
                       <b-button size="sm" class="mx-1" @click="deleteRow(row.item.id, 'transactionsByAccount')">
                         Удалить
                       </b-button>
-                      <b-button size="sm" class="mx-1" @click="editRowHandler(row, 'transactionsByAccount')">
+                      <b-button size="sm" class="mx-1" @click="editRow(row, 'transactionsByAccount')">
                         {{ !transactionsByAccount.items[row.index].isEdit ? 'Изменить' : 'Сохранить' }}
                       </b-button>
                       <b-button size="sm" class="mx-1" @click="showDetailModal(row)"> Детали </b-button>
@@ -293,8 +293,6 @@ export default {
         }
       }
 
-      console.log('content strings', contentStrings);
-
       this.detailContent = contentStrings;
     },
     hideDetailModalHandler() {
@@ -307,7 +305,7 @@ export default {
 
       this[tableName].items.splice(deleteIndex, 1);
     },
-    editRowHandler(row, tableName) {
+    editRow(row, tableName) {
       this[tableName].items[row.index].isEdit = !this[tableName].items[row.index].isEdit;
     },
     addNewAccount(accountData) {
