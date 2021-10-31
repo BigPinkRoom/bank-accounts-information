@@ -1,19 +1,19 @@
 import ApiModule from '../module';
 
 class Transactions extends ApiModule {
-  async getTransactions(params) {
+  async get(params) {
     return await this.request('/transactions/get', 'get', params);
   }
 
-  async addTransactions(requestBody) {
+  async add(requestBody) {
     return await this.request('/transactions/add', 'put', requestBody);
   }
 
-  async updateTransactions(requestBody) {
+  async update(requestBody) {
     return await this.request('/transactions/update', 'put', requestBody);
   }
 
-  async deleteTransactions(requestBody) {
+  async delete(requestBody) {
     return await this.request('/transactions/delete', 'delete', requestBody);
   }
 }
