@@ -4,7 +4,7 @@
     <div v-if="showForms">
       <b-row v-for="property in listProperties" :key="property.id">
         <b-col>
-          <b-form-input size="sm" class="m-1" v-model="properties[property]"></b-form-input>
+          <b-form-input size="sm" class="m-1" :placeholder="property" v-model="properties[property]"></b-form-input>
         </b-col>
       </b-row>
       <b-row>
