@@ -1,3 +1,6 @@
+import { convertToFloatOne } from '@/helpers/numbers';
+import { compareIsoDates } from '@/helpers/date';
+
 export const accountsServices = {
   get: {
     convertData(response) {
@@ -6,21 +9,40 @@ export const accountsServices = {
     },
   },
   getAccountsWithBalance: {
-    convertData({ response, selectedDate }) {
-      const filteredResponse = response.AcctPos.filter((item) => {
-        if (item.OpDate === selectedDate) {
+    convertData({ accounts, transactions, selectedDate }) {
+      const selectedTransactions = transactions.Doc.filter((transaction) => {
+        if (compareIsoDates(transaction.OpDate, selectedDate) === 'greater') {
+          return false;
+        } else {
           return true;
         }
       });
 
-      const convertedToItems = filteredResponse.map((item) => {
+      const accountsWithBalance = accounts.AcctAcct.map((account) => {
+        let startBalance = account.Ost;
+
+        // console.log('start balance', account.Acct, startBalance);
+
+        selectedTransactions.forEach((transaction) => {
+          if (transaction.AcctCr === account.Acct) {
+            // console.log('operation less', account.Acct, convertToFloatOne(transaction.Amount));
+            startBalance -= convertToFloatOne(transaction.Amount);
+          } else if (transaction.AcctDB === account.Acct) {
+            // console.log('operation greater', account.Acct, convertToFloatOne(transaction.Amount));
+            startBalance += convertToFloatOne(transaction.Amount);
+          }
+        });
+
+        // console.log('start balance after', account.Acct, startBalance);
         return {
-          accountNumber: item.AcctNum,
-          remainingBalance: item.Balance,
+          accountNumber: account.Acct,
+          remainingBalance: startBalance.toFixed(1),
         };
       });
 
-      return convertedToItems;
+      // console.log('accounts with balance', accountsWithBalance);
+
+      return accountsWithBalance;
     },
   },
   add: {

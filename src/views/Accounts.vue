@@ -108,9 +108,11 @@ export default {
       this.isLoading = true;
 
       try {
-        const response = await api.remainingBalances.get(selectedDate);
+        const responseAccounts = await api.accounts.get();
+        const responseTransactions = await api.transactions.get();
         const result = accountsServices.getAccountsWithBalance.convertData({
-          response,
+          accounts: responseAccounts,
+          transactions: responseTransactions,
           selectedDate,
         });
         this.accountsWithRemainingBalances.items = result;
