@@ -1,15 +1,13 @@
+import { uuid } from 'vue-uuid';
+
 export const transactionsServices = {
   get: {
     convertToArray({ transactions }) {
       const convertedData = transactions.Doc;
 
       const changedAmountToFloat = convertedData.map((transaction) => {
-        return {
-          AcctCr: transaction.AcctCr,
-          AcctDB: transaction.AcctDB,
-          Amount: transaction.Amount.toFixed(1),
-          OpDate: transaction.OpDate,
-        };
+        transaction.Amount = transaction.Amount.toFixed(1);
+        return transaction;
       });
 
       return changedAmountToFloat;
@@ -17,11 +15,19 @@ export const transactionsServices = {
   },
   getByAccountNumber: {
     convertToArray({ accountNumber, transactions }) {
-      return transactions.Doc.filter((item) => {
+      const filteredTransactions = transactions.Doc.filter((item) => {
         const isTransactionBelongsAccount = item.AcctCr === accountNumber || item.AcctDB === accountNumber;
 
         return isTransactionBelongsAccount ? true : false;
       });
+
+      const addedId = filteredTransactions.map((element) => {
+        element.id = uuid.v4();
+        element.isEdit = false;
+        return element;
+      });
+
+      return addedId;
     },
   },
   getByOperationsDay: {
@@ -34,12 +40,8 @@ export const transactionsServices = {
       });
 
       const changedAmountToFloat = filteredTransactions.map((transaction) => {
-        return {
-          AcctCr: transaction.AcctCr,
-          AcctDB: transaction.AcctDB,
-          Amount: transaction.Amount.toFixed(1),
-          OpDate: transaction.OpDate,
-        };
+        transaction.Amount = transaction.Amount.toFixed(1);
+        return transaction;
       });
 
       return changedAmountToFloat;

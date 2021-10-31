@@ -1,5 +1,6 @@
 import { convertToFloatOne } from '@/helpers/numbers';
 import { compareIsoDates } from '@/helpers/date';
+import { uuid } from 'vue-uuid';
 
 export const accountsServices = {
   get: {
@@ -75,6 +76,7 @@ export const accountsServices = {
         });
 
         return {
+          id: uuid.v4(),
           accountNumber: account.Acct,
           remainingBalance: startBalance.toFixed(1),
           isEdit: false,

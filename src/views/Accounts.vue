@@ -39,8 +39,8 @@
                   <template #cell(accountNumber)="data">
                     <b-form-input
                       v-if="accountsWithRemainingBalances.items[data.index].isEdit"
-                      type="text"
                       v-model="accountsWithRemainingBalances.items[data.index].accountNumber"
+                      type="text"
                     ></b-form-input>
                     <span v-else>{{ data.value }}</span>
                   </template>
@@ -54,8 +54,10 @@
                   </template>
                   <template #cell(settings)="row">
                     <div class="d-flex justify-content-end">
-                      <b-button size="sm" class="mx-1" @click="deleteRow(row.item.accountNumber)"> Удалить </b-button>
-                      <b-button size="sm" class="mx-1" @click="editRowHandler(row)">
+                      <b-button size="sm" class="mx-1" @click="deleteRow(row.item.id, 'accountsWithRemainingBalances')">
+                        Удалить
+                      </b-button>
+                      <b-button size="sm" class="mx-1" @click="editRowHandler(row, 'accountsWithRemainingBalances')">
                         {{ !accountsWithRemainingBalances.items[row.index].isEdit ? 'Изменить' : 'Сохранить' }}
                       </b-button>
                       <b-button size="sm" class="mx-1" @click="showDetailModal(row)"> Детали </b-button>
@@ -69,7 +71,51 @@
             </b-row>
             <b-row v-if="!isShowTransactionsTable">
               <b-col>
-                <b-table :items="transactionsByAccount.items" :fields="transactionsByAccount.fields"> </b-table>
+                <b-table :items="transactionsByAccount.items" :fields="transactionsByAccount.fields">
+                  <template #cell(OpDate)="data">
+                    <b-form-input
+                      v-if="transactionsByAccount.items[data.index].isEdit"
+                      v-model="transactionsByAccount.items[data.index].OpDate"
+                      type="text"
+                    ></b-form-input>
+                    <span v-else>{{ data.value }}</span>
+                  </template>
+                  <template #cell(AcctDB)="data">
+                    <b-form-input
+                      v-if="transactionsByAccount.items[data.index].isEdit"
+                      v-model="transactionsByAccount.items[data.index].AcctDB"
+                      type="text"
+                    ></b-form-input>
+                    <span v-else>{{ data.value }}</span>
+                  </template>
+                  <template #cell(AcctCr)="data">
+                    <b-form-input
+                      v-if="transactionsByAccount.items[data.index].isEdit"
+                      v-model="transactionsByAccount.items[data.index].AcctCr"
+                      type="text"
+                    ></b-form-input>
+                    <span v-else>{{ data.value }}</span>
+                  </template>
+                  <template #cell(Amount)="data">
+                    <b-form-input
+                      v-if="transactionsByAccount.items[data.index].isEdit"
+                      v-model="transactionsByAccount.items[data.index].Amount"
+                      type="text"
+                    ></b-form-input>
+                    <span v-else>{{ data.value }}</span>
+                  </template>
+                  <template #cell(settings)="row">
+                    <div class="d-flex justify-content-end">
+                      <b-button size="sm" class="mx-1" @click="deleteRow(row.item.id, 'transactionsByAccount')">
+                        Удалить
+                      </b-button>
+                      <b-button size="sm" class="mx-1" @click="editRowHandler(row, 'transactionsByAccount')">
+                        {{ !transactionsByAccount.items[row.index].isEdit ? 'Изменить' : 'Сохранить' }}
+                      </b-button>
+                      <b-button size="sm" class="mx-1" @click="showDetailModal(row)"> Детали </b-button>
+                    </div>
+                  </template>
+                </b-table>
               </b-col>
             </b-row>
             <b-row v-else>
@@ -139,6 +185,10 @@ export default {
           {
             key: 'Amount',
             label: 'Сумма',
+          },
+          {
+            key: 'settings',
+            label: 'Настройки',
           },
         ],
         items: [],
@@ -238,7 +288,9 @@ export default {
       const contentStrings = [];
 
       for (let element in row.item) {
-        contentStrings.push(`${[element]}: ${row.item[element]}`);
+        if (element !== 'isEdit') {
+          contentStrings.push(`${[element]}: ${row.item[element]}`);
+        }
       }
 
       console.log('content strings', contentStrings);
@@ -248,16 +300,15 @@ export default {
     hideDetailModalHandler() {
       this.isShowDetail = false;
     },
-    async deleteRow(rowId) {
-      const deleteIndex = this.accountsWithRemainingBalances.items.findIndex((account) => {
-        return account.accountNumber === rowId;
+    deleteRow(rowId, tableName) {
+      const deleteIndex = this[tableName].items.findIndex((element) => {
+        return element.id === rowId;
       });
 
-      this.accountsWithRemainingBalances.items.splice(deleteIndex, 1);
+      this[tableName].items.splice(deleteIndex, 1);
     },
-    editRowHandler(row) {
-      this.accountsWithRemainingBalances.items[row.index].isEdit =
-        !this.accountsWithRemainingBalances.items[row.index].isEdit;
+    editRowHandler(row, tableName) {
+      this[tableName].items[row.index].isEdit = !this[tableName].items[row.index].isEdit;
     },
     addNewAccount(accountData) {
       this.accountsWithRemainingBalances.items.unshift(accountData);
