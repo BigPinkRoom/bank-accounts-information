@@ -17,7 +17,7 @@ export default {
   name: 'MainMenu',
   props: {
     links: {
-      type: Object,
+      type: Array,
     },
   },
 };
